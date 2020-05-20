@@ -1,5 +1,6 @@
 #include <amxmodx>
 #include <crxknives>
+#include <cstrike>
 #include <fakemeta>
 #include <hamsandwich>
 
@@ -7,12 +8,13 @@
 const MAX_PLAYERS = 32
 #endif
 
-new const PLUGIN_VERSION[] = "1.0"
+new const PLUGIN_VERSION[] = "1.1"
 
 const NOT_SET = -1
 const Float:NOT_SET_F = -1.0
 new const ATTRIBUTE_KNOCKBACK[] = "KNOCKBACK"
 
+new g_pFriendlyFire
 new g_iPower[MAX_PLAYERS + 1]
 new Float:g_fVelocity[MAX_PLAYERS + 1]
 
@@ -21,6 +23,7 @@ public plugin_init()
 	register_plugin("CRXKnives: Knockback", PLUGIN_VERSION, "OciXCrom")
 	register_cvar("CRXKnivesKnockback", PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY|FCVAR_UNLOGGED)
 	RegisterHam(Ham_TakeDamage, "player", "OnTakeDamage", 1)
+	g_pFriendlyFire = get_cvar_pointer("mp_friendlyfire")
 }
 
 public crxknives_knife_updated(id, iKnife, bool:bOnConnect)
@@ -51,6 +54,11 @@ public crxknives_knife_updated(id, iKnife, bool:bOnConnect)
 public OnTakeDamage(iVictim, iInflictor, iAttacker)
 {
 	if(!is_user_connected(iAttacker) || g_iPower[iAttacker] == NOT_SET || iVictim == iAttacker || iInflictor != iAttacker || get_user_weapon(iAttacker) != CSW_KNIFE)
+	{
+		return
+	}
+
+	if(cs_get_user_team(iAttacker) == cs_get_user_team(iVictim) && !get_pcvar_num(g_pFriendlyFire))
 	{
 		return
 	}
